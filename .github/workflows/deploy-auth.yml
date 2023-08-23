@@ -15,6 +15,14 @@ jobs:
       - run: cd auth && docker build -t thinhvqnguyen/auth:latest .
       - run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
         env:
-          DOCKER_USERNAME: ${{secrets.DOCKER_USERNAME}}
-          DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       - run: docker image push thinhvqnguyen/auth:latest
+      - uses: google-github-actions/auth@v1
+        with:
+          workload_identity_provider: 'projects/830611331628/locations/global/workloadIdentityPools/ticketing-github-action/providers/github'
+          service_account: 'ticketing-github-action@ticketing-dev-394805'
+      - uses: 'google-github-actions/setup-gcloud@v1'
+      - run: gcloud container clusters get-credentials ticketing-dev
+      - run: kubectl rollout restart deployment auth-depl
+
