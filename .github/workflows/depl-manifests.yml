@@ -18,4 +18,4 @@ jobs:
           service_account: ${{ secrets.SERVICE_ACCOUNT }}
       - uses: 'google-github-actions/setup-gcloud@v1'
       - run: gcloud container clusters get-credentials ticketing-dev
-      - run: kubectl apply -f infra/k8s
+      - run: kubectl apply -f infra/k8s && kubectl apply -f infra/k8s-prod
