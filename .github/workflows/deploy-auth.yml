@@ -20,8 +20,8 @@ jobs:
       - run: docker image push thinhvqnguyen/auth:latest
       - uses: google-github-actions/auth@v1
         with:
-          workload_identity_provider: 'projects/830611331628/locations/global/workloadIdentityPools/ticketing-github-action/providers/github'
-          service_account: 'ticketing-github-action@ticketing-dev-394805'
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.SERVICE_ACCOUNT }}
       - uses: 'google-github-actions/setup-gcloud@v1'
       - run: gcloud container clusters get-credentials ticketing-dev
       - run: kubectl rollout restart deployment auth-depl
