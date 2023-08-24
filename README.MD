@@ -112,6 +112,26 @@ apply this to the other artifaces such as [client/auth/orders/tickets/payments/e
   - `DIGITALOCEAN_ACCESS_TOKEN`
 - Go to .github/deployment-\* -> comment GCLOUD part and uncomment OCEAN DIGITAL one.
 
+#### DOMAIN NAME:
+
+- Go to `namecheap.com` buy a domain
+- Domain List -> NAMESERVERS -> CUSTOM DNS:
+  - `ns1.digitalocean.com`
+  - `ns2.digitalocean.com`
+  - `ns3.digitalocean.com`
+- Go back to Digital Ocean -> Networking -> Domains -> Input bought domain -> Add Domain
+- Set A HOSTNAME with `@`, WILL DIRECT TO with `<your-load-balance-ip>` and TTL 30s -> Create Record
+- Set CNAME HOSTNAME with `www`, IS AN ALIAS OF `@` and TTL 30s -> Create Record
+- Update in `infra/k8s-prod` "host" with the domain name you just bought
+- [Optional] Due to not configure https connection, go to each services "src/app.ts", set:
+
+```
+  cookieSession({
+    signed: false,
+    secure: false,
+  })
+```
+
 ### In GCLOUD
 
 - create clusters with 3 nodes, each node has 2gb ram
