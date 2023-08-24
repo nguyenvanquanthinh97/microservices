@@ -1,0 +1,31 @@
+name: deploy-manifests
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - infra/**
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: "read"
+      id-token: "write"
+    steps:
+      - uses: actions/checkout@v3
+
+      # DEPLOYMENT:
+      - uses: digitalocean/action-doctl@v3
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+      - run: doctl kubernets cluster kubeconfig save ticketing
+      ### USING GOOGLE CLOUD
+      # - uses: google-github-actions/auth@v1
+      #   with:
+      #     workload_identity_provider: projects/830611331628/locations/global/workloadIdentityPools/githubactions/providers/github
+      #     service_account: k8s-service-account@ticketing-dev-394805.iam.gserviceaccount.com
+      # - uses: "google-github-actions/setup-gcloud@v1"
+      # - run: gcloud container clusters get-credentials ticketing-dev --zone asia-southeast1-a --project ticketing-dev-394805
+      - run: kubectl apply -f infra/k8s && kubectl apply -f infra/k8s-prod

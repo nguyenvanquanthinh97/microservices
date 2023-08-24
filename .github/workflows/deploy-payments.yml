@@ -9,12 +9,29 @@ on:
 
 jobs:
   build:
-    runs-on:  ubuntu-latest
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - run: cd payments && docker build -t thinhvqnguyen/payments:latest .
       - run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
         env:
-          DOCKER_USERNAME: ${{secrets.DOCKER_USERNAME}}
-          DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       - run: docker image push thinhvqnguyen/payments:latest
+
+      # DEPLOYMENT:
+      ### USING DIGITAL OCEAN ###
+      - uses: digitalocean/action-doctl@v3
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+      - run: doctl kubernets cluster kubeconfig save ticketing
+      - run: kubectl rollout restart deployment payments-depl
+
+      ###  USING GOOGLE CLOUD ####
+      # - uses: google-github-actions/payments@v1
+      #   with:
+      #     workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+      #     service_account: ${{ secrets.SERVICE_ACCOUNT }}
+      # - uses: "google-github-actions/setup-gcloud@v1"
+      # - run: gcloud container clusters get-credentials ticketing-dev
+      # - run: kubectl rollout restart deployment payments-depl

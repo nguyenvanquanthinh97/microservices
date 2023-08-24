@@ -1,23 +1,23 @@
-name: deploy-tickets
+name: deploy-expiration
 
 on:
   push:
     branches:
       - master
     paths:
-      - tickets/**
+      - expiration/**
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: cd tickets && docker build -t thinhvqnguyen/tickets:latest .
+      - run: cd expiration && docker build -t thinhvqnguyen/expiration:latest .
       - run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-      - run: docker image push thinhvqnguyen/tickets:latest
+      - run: docker image push thinhvqnguyen/expiration:latest
 
       # DEPLOYMENT:
       ### USING DIGITAL OCEAN ###
@@ -25,13 +25,13 @@ jobs:
         with:
           token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
       - run: doctl kubernets cluster kubeconfig save ticketing
-      - run: kubectl rollout restart deployment tickets-depl
+      - run: kubectl rollout restart deployment expiration-depl
 
       ###  USING GOOGLE CLOUD ####
-      # - uses: google-github-actions/tickets@v1
+      # - uses: google-github-actions/expiration@v1
       #   with:
       #     workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
       #     service_account: ${{ secrets.SERVICE_ACCOUNT }}
       # - uses: "google-github-actions/setup-gcloud@v1"
       # - run: gcloud container clusters get-credentials ticketing-dev
-      # - run: kubectl rollout restart deployment tickets-depl
+      # - run: kubectl rollout restart deployment expiration-depl
