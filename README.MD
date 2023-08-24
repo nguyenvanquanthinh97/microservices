@@ -22,7 +22,7 @@
   - `kubectl delete -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.1/deploy/static/provider/cloud/deploy.yaml`
 - Go to https://ticketing.dev/, and might need to type this when showing alert page: `this is unsafe`
 - To restart a service with newest image update:
-  - `kubectl rollout restart deployment auth-depl`
+  - `kubectl rollout restart deployment <service>-depl`
 
 ### On Google Cloud
 
@@ -123,6 +123,17 @@ apply this to the other artifaces such as [client/auth/orders/tickets/payments/e
 - Set A HOSTNAME with `@`, WILL DIRECT TO with `<your-load-balance-ip>` and TTL 30s -> Create Record
 - Set CNAME HOSTNAME with `www`, IS AN ALIAS OF `@` and TTL 30s -> Create Record
 - Update in `infra/k8s-prod` "host" with the domain name you just bought
+- In the client "api/build-client.js":
+
+```
+    // We are on the server
+
+    return axios.create({
+      baseURL: 'Whatever_your_purchased_domain_is',
+      headers: req.headers,
+    });
+```
+
 - [Optional] Due to not configure https connection, go to each services "src/app.ts", set:
 
 ```
@@ -130,6 +141,44 @@ apply this to the other artifaces such as [client/auth/orders/tickets/payments/e
     signed: false,
     secure: false,
   })
+```
+
+- [LOADBALANCER DIGITAL OCEAN BUG](https://github.com/digitalocean/digitalocean-cloud-controller-manager/blob/master/docs/controllers/services/examples/README.md#accessing-pods-over-a-managed-load-balancer-from-inside-the-cluster)
+  - FIXED [for instance with domain name is `www.ticketing-app-prod.xyz`]:
+
+```
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol: 'true'
+    service.beta.kubernetes.io/do-loadbalancer-hostname: 'www.ticketing-app-prod.xyz'
+  labels:
+    helm.sh/chart: ingress-nginx-2.0.3
+    app.kubernetes.io/name: ingress-nginx
+    app.kubernetes.io/instance: ingress-nginx
+    app.kubernetes.io/version: 0.32.0
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: controller
+  name: ingress-nginx-controller
+  namespace: ingress-nginx
+spec:
+  type: LoadBalancer
+  externalTrafficPolicy: Local
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: http
+    - name: https
+      port: 443
+      protocol: TCP
+      targetPort: https
+  selector:
+    app.kubernetes.io/name: ingress-nginx
+    app.kubernetes.io/instance: ingress-nginx
+    app.kubernetes.io/component: controller
 ```
 
 ### In GCLOUD
